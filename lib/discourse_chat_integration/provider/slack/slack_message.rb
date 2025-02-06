@@ -6,6 +6,23 @@ module DiscourseChatIntegration::Provider::SlackProvider
       @raw = raw_message
       @transcript = transcript
     end
+   
+    #Extract the first question from the message text
+    def extract_first_question
+      #Get the raw test of the message
+      raw_text =  @raw["text"].nil? ? "" : @raw["text"]
+
+      #Find the first question (text before the first '?')
+      first_question = raw_text.split('?').first
+
+      #If a question is found , append '?' to make it a complete question
+      if first_question && !first_question.strip.empty?
+        first_question.strip + '?'
+      else 
+        # If no question is found , use a default title
+        "New Thread from Slack"
+      end
+    end
 
     def username
       if user

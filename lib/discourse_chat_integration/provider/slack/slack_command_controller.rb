@@ -25,6 +25,46 @@ module DiscourseChatIntegration::Provider::SlackProvider
       head :ok
     end
 
+    def process_post_request(channel , tokens , slack_channel_id , channel_name ,  response_url)
+      if SiteSetting.chat_integration_slack_access_token.empty?
+        return { text: I18n.t("chat_integration_provider.slack.transcript.api_required")}
+      end
+
+      Scheduler::Defer.later "Processing slack transcript request" do
+        # Extract the first question from the Slack message
+        slack_message = DiscourseChatIntegration::Provider::SlackProvider::SlackMessage.new(
+          { "text" => tokens.join(" ") }, # Simulate a raw Slack message
+          nil # Transcript is not needed for this operation
+        )
+        title = slack_message.extract_first_question
+
+        # Prepare the response
+        response = build_post_request_response(
+          channel,
+          tokens,
+          slack_channel_id,
+          channel_name,
+          response_url,
+          title
+        )
+
+        http = DiscourseChatIntegration::Provider::SlackProvider.slack_api_http
+        req = Net::HTTP::Post.new(URI(response_url), "Content-Type" => "application/json")
+        req.body = response.to_json
+        http.request(req)
+      end
+
+      { text: I18n.t("chat_integration.provider.slack.transcript.loading") }
+    end
+
+    def build_post_request_response(channel, tokens,  slack_channel_id, channel_name , response_url , title)
+      # Your existing logic for building the response
+      # Add the title to the response if needed
+      {
+        text: I18n.t("chat_integration.provider.slack.transcript.success"),
+        title: title
+      }
+    end
     private
 
     def process_command(params)

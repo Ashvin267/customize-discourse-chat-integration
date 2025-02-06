@@ -30,6 +30,28 @@ module DiscourseChatIntegration::Provider::SlackProvider
     SlackMessageFormatter.format(doc.to_html)
   end
 
+  def self.trigger_notification(post, channel, rule)
+    channel_id = channel.data["identifier"]
+    filter = rule.nil? ? "" : rule.filter
+  
+    # Extract the first question from the Slack message
+    slack_message = SlackMessage.new(
+      { "text" => post.raw }, # Simulate a raw Slack message
+      nil # Transcript is not needed for this operation
+    )
+    title = slack_message.extract_first_question
+  
+    # Create the message with the extracted title
+    message = slack_message(post, channel_id, filter)
+    message[:attachments][0][:title] = title if title
+  
+    if SiteSetting.chat_integration_slack_access_token.empty?
+      self.send_via_webhook(message)
+    else
+      self.send_via_api(post, channel_id, message)
+    end
+  end
+
   def self.slack_message(post, channel, filter)
     display_name = ::DiscourseChatIntegration::Helper.formatted_display_name(post.user)
 
