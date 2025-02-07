@@ -33,6 +33,8 @@ module DiscourseChatIntegration::Provider::SlackProvider
   def self.trigger_notification(post, channel, rule)
     channel_id = channel.data["identifier"]
     filter = rule.nil? ? "" : rule.filter
+
+    Rails.logger.info("\n\nTriggering Slack notification for channel ID: #{channel_id}\n\n")
   
     # Extract the first question from the Slack message
     slack_message = SlackMessage.new(
@@ -40,14 +42,18 @@ module DiscourseChatIntegration::Provider::SlackProvider
       nil # Transcript is not needed for this operation
     )
     title = slack_message.extract_first_question
-  
+    Rails.logger.info("\n\nExtracted title for notification: #{title}\n\n")
+
     # Create the message with the extracted title
     message = slack_message(post, channel_id, filter)
+    Rails.logger.info("\n\nConstructed message payload: #{message}\n\n")
     message[:attachments][0][:title] = title if title
   
     if SiteSetting.chat_integration_slack_access_token.empty?
+      Rails.logger.info("\n\nSending message via webhook\n\n")
       self.send_via_webhook(message)
     else
+      Rails.logger.info("\n\nSending message via API\n\n")
       self.send_via_api(post, channel_id, message)
     end
   end
@@ -268,17 +274,17 @@ module DiscourseChatIntegration::Provider::SlackProvider
     end
   end
 
-  def self.trigger_notification(post, channel, rule)
-    channel_id = channel.data["identifier"]
-    filter = rule.nil? ? "" : rule.filter
-    message = slack_message(post, channel_id, filter)
+  # def self.trigger_notification(post, channel, rule)
+  #   channel_id = channel.data["identifier"]
+  #   filter = rule.nil? ? "" : rule.filter
+  #   message = slack_message(post, channel_id, filter)
 
-    if SiteSetting.chat_integration_slack_access_token.empty?
-      self.send_via_webhook(message)
-    else
-      self.send_via_api(post, channel_id, message)
-    end
-  end
+  #   if SiteSetting.chat_integration_slack_access_token.empty?
+  #     self.send_via_webhook(message)
+  #   else
+  #     self.send_via_api(post, channel_id, message)
+  #   end
+  # end
 
   def self.slack_api_http
     http = FinalDestination::HTTP.new("slack.com", 443)

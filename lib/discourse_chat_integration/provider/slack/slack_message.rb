@@ -9,8 +9,10 @@ module DiscourseChatIntegration::Provider::SlackProvider
    
     #Extract the first question from the message text
     def extract_first_question
+      Rails.logger.info("\n\nExtracting the first question from Slack message\n\n")
       #Get the raw test of the message
       raw_text =  @raw["text"].nil? ? "" : @raw["text"]
+      Rails.logger.info("\n\nRaw text: #{raw_text}\n\n")
 
       #Find the first question (text before the first '?')
       first_question = raw_text.split('?').first
@@ -18,8 +20,10 @@ module DiscourseChatIntegration::Provider::SlackProvider
       #If a question is found , append '?' to make it a complete question
       if first_question && !first_question.strip.empty?
         first_question.strip + '?'
+        Rails.logger.info("\n\nFormatted question: #{result}\n\n")
       else 
         # If no question is found , use a default title
+        Rails.logger.info("\n\nNo question found. Using default title.\n\n")
         "New Thread from Slack"
       end
     end
