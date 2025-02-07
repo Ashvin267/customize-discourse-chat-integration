@@ -32,11 +32,13 @@ module DiscourseChatIntegration::Provider::SlackProvider
 
       Scheduler::Defer.later "Processing slack transcript request" do
         # Extract the first question from the Slack message
-        slack_message = DiscourseChatIntegration::Provider::SlackProvider::SlackMessage.new(
-          { "text" => tokens.join(" ") }, # Simulate a raw Slack message
-          nil # Transcript is not needed for this operation
-        )
-        title = slack_message.extract_first_question
+        # slack_message = DiscourseChatIntegration::Provider::SlackProvider::SlackMessage.new(
+        #   { "text" => tokens.join(" ") }, # Simulate a raw Slack message
+        #   nil # Transcript is not needed for this operation
+        # )
+        # title = slack_message.extract_first_question
+
+        title = "Static Thread Title"
         Rails.logger.info("\n\nExtracted title: #{title}\n\n")
 
         # Prepare the response

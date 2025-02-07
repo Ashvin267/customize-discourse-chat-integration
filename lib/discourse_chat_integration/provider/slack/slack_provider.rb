@@ -37,12 +37,15 @@ module DiscourseChatIntegration::Provider::SlackProvider
     Rails.logger.info("\n\nTriggering Slack notification for channel ID: #{channel_id}\n\n")
   
     # Extract the first question from the Slack message
-    slack_message = SlackMessage.new(
-      { "text" => post.raw }, # Simulate a raw Slack message
-      nil # Transcript is not needed for this operation
-    )
-    title = slack_message.extract_first_question
+    # slack_message = SlackMessage.new(
+    #   { "text" => post.raw }, # Simulate a raw Slack message
+    #   nil # Transcript is not needed for this operation
+    # )
+    # title = slack_message.extract_first_question
+  
+    title  = "Static Thread Title"
     Rails.logger.info("\n\nExtracted title for notification: #{title}\n\n")
+    
 
     # Create the message with the extracted title
     message = slack_message(post, channel_id, filter)
